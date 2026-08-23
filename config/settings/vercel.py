@@ -14,14 +14,15 @@ if not SECRET_KEY:
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
-# ─── Database (PostgreSQL via Neon) ──────────────────────────────────────────
+# ─── Database ─────────────────────────────────────────────────────────────────
 # Free tier: 512MB storage, 24/7 compute
+_db_url = os.getenv('DATABASE_URL', '')
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL'),
+        default=_db_url,
         conn_max_age=600,
         conn_health_checks=True,
-        ssl_require=True,
+        ssl_require=_db_url.startswith('postgres'),
     )
 }
 
@@ -41,7 +42,7 @@ GS_FILE_OVERWRITE = False
 # Google Cloud credentials (from service account JSON)
 GS_TYPE = 'service_account'
 GS_PRIVATE_KEY_ID = os.getenv('GS_PRIVATE_KEY_ID')
-GS_PRIVATE_KEY = os.getenv('GS_PRIVATE_KEY')
+GS_PRIVATE_KEY = (os.getenv('GS_PRIVATE_KEY') or '').replace('\\n', '\n')
 GS_CLIENT_EMAIL = os.getenv('GS_CLIENT_EMAIL')
 GS_CLIENT_ID = os.getenv('GS_CLIENT_ID')
 GS_AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'
