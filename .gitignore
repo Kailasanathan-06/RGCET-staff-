@@ -28,3 +28,6 @@ USER_CREDENTIALS.pdf
 Thumbs.db
 .vscode/
 .idea/
+
+.vercel
+.env*
