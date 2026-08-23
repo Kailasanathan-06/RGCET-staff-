@@ -13,13 +13,6 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.vercel')
 
 # Import Django and set up
 from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
 
-# Vercel handler
-def handler(request, response):
-    """
-    Vercel serverless function handler.
-    This is a simplified handler - for full Django support,
-    use the vercel-python package or adapt as needed.
-    """
-    return application
+app = get_wsgi_application()
+application = app

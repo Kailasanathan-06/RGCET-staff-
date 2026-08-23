@@ -12,7 +12,11 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 if not SECRET_KEY:
     raise ValueError("SECRET_KEY environment variable is required")
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv('ALLOWED_HOSTS', '').split(',')
+    if host.strip()
+]
 
 # ─── Database ─────────────────────────────────────────────────────────────────
 # Free tier: 512MB storage, 24/7 compute
@@ -49,7 +53,11 @@ GS_AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'
 GS_TOKEN_URI = 'https://oauth2.googleapis.com/token'
 
 # ─── CSRF & Security ─────────────────────────────────────────────────────────
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
+    if origin.strip()
+]
 SECURE_SSL_REDIRECT = True
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
