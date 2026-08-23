@@ -1,0 +1,30 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+env/
+
+# Django
+db.sqlite3
+staticfiles/
+
+# User uploads (served from Google Cloud Storage in production)
+media/
+
+# Local docs with sensitive info
+PROJECT_INFORMATION.pdf
+RUNNING_COMMANDS.pdf
+USER_CREDENTIALS.pdf
+
+# Vercel
+.vercel
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
