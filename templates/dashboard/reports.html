@@ -1,0 +1,173 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Reports - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">Reports</h1>
+        <p class="page-subtitle">
+            {% if request.user.profile.is_super_admin %}
+                College-wide statistics
+            {% else %}
+                {{ request.user.profile.department.code }} department statistics
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon primary"><i class="bi bi-folder2-open"></i></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ totals.resources }}</div>
+                <div class="stat-label">Resources</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon success"><i class="bi bi-book"></i></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ totals.subjects }}</div>
+                <div class="stat-label">Subjects</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon warning"><i class="bi bi-people"></i></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ totals.students }}</div>
+                <div class="stat-label">Students</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon danger"><i class="bi bi-person-badge"></i></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ totals.teachers }}</div>
+                <div class="stat-label">Teachers</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Resources by Category -->
+    <div class="col-lg-6">
+        <div class="card border-light shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold">Resources by Category</div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr class="text-secondary bg-light"><th class="ps-4">Category</th><th class="text-end pe-4">Count</th></tr></thead>
+                    <tbody>
+                        {% for item in category_report %}
+                            <tr>
+                                <td class="ps-4">{{ item.category__name }}</td>
+                                <td class="text-end pe-4"><span class="badge badge-primary">{{ item.count }}</span></td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="2" class="text-center text-muted py-4 small">No data yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resources by Subject -->
+    <div class="col-lg-6">
+        <div class="card border-light shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold">Resources by Subject</div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr class="text-secondary bg-light"><th class="ps-4">Subject</th><th class="text-end pe-4">Count</th></tr></thead>
+                    <tbody>
+                        {% for item in subject_report %}
+                            <tr>
+                                <td class="ps-4">{{ item.subject__code }} — {{ item.subject__name }}</td>
+                                <td class="text-end pe-4"><span class="badge badge-primary">{{ item.count }}</span></td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="2" class="text-center text-muted py-4 small">No data yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Students by Batch -->
+    <div class="col-lg-6">
+        <div class="card border-light shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold">Students by Batch</div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr class="text-secondary bg-light"><th class="ps-4">Batch</th><th>Year</th><th class="text-end pe-4">Count</th></tr></thead>
+                    <tbody>
+                        {% for item in student_batch_report %}
+                            <tr>
+                                <td class="ps-4">{{ item.batch }}</td>
+                                <td>{{ item.year }}{% if item.year == 1 %}st{% elif item.year == 2 %}nd{% elif item.year == 3 %}rd{% else %}th{% endif %} Year</td>
+                                <td class="text-end pe-4"><span class="badge badge-primary">{{ item.count }}</span></td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted py-4 small">No students yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff by Role -->
+    <div class="col-lg-6">
+        <div class="card border-light shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold">Staff by Role</div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr class="text-secondary bg-light"><th class="ps-4">Role</th><th class="text-end pe-4">Count</th></tr></thead>
+                    <tbody>
+                        {% for item in staff_role_report %}
+                            <tr>
+                                <td class="ps-4">{{ item.role }}</td>
+                                <td class="text-end pe-4"><span class="badge badge-primary">{{ item.count }}</span></td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="2" class="text-center text-muted py-4 small">No staff yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Activity -->
+    <div class="col-12">
+        <div class="card border-light shadow-sm">
+            <div class="card-header bg-white fw-semibold">Upload Activity (last 14 days)</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead><tr class="text-secondary bg-light"><th class="ps-4">Date</th><th class="text-end pe-4">Uploads</th></tr></thead>
+                        <tbody>
+                            {% for item in upload_activity %}
+                                <tr>
+                                    <td class="ps-4">{{ item.day|date:"d M Y" }}</td>
+                                    <td class="text-end pe-4"><span class="badge badge-active">{{ item.count }}</span></td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="2" class="text-center text-muted py-4 small">No uploads in the last 14 days.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

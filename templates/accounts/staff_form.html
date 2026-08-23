@@ -1,0 +1,130 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{% if register_mode %}Create Account - Teacher / HOD{% else %}New User{% endif %} - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">{% if register_mode %}Create Teacher / HOD Account{% else %}New User{% endif %}</h1>
+        <p class="page-subtitle">{% if register_mode %}Sign up as a Teacher or HOD — you can log in immediately after creation{% else %}Create a Teacher or HOD account — the user can log in immediately{% endif %}</p>
+    </div>
+</div>
+<div class="card border-light shadow-sm mb-4">
+    <div class="card-body py-3">
+        <span class="text-secondary me-3"><i class="bi bi-person-plus-fill me-1"></i>Create:</span>
+        <button type="button" class="btn btn-outline-primary me-2" onclick="setRole('TEACHER')">
+            <i class="bi bi-person-badge me-1"></i> Teacher Account
+        </button>
+        <button type="button" class="btn btn-outline-warning" onclick="setRole('HOD')">
+            <i class="bi bi-person-badge-fill me-1"></i> HOD Account
+        </button>
+        <span class="text-muted small ms-3">Selecting one pre-fills the role below.</span>
+    </div>
+</div>
+
+<div class="card border-light shadow-sm" style="max-width: 760px;">
+    <div class="card-body">
+        <form method="POST" id="newUserForm" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label fw-semibold">{{ form.first_name.label }}</label>
+                    {{ form.first_name }}
+                    {% for error in form.first_name.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label fw-semibold">{{ form.last_name.label }}</label>
+                    {{ form.last_name }}
+                    {% for error in form.last_name.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.email.id_for_label }}" class="form-label fw-semibold">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% for error in form.email.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.username.id_for_label }}" class="form-label fw-semibold">{{ form.username.label }}</label>
+                    {{ form.username }}
+                    {% if form.username.help_text %}<div class="form-text">{{ form.username.help_text }}</div>{% endif %}
+                    {% for error in form.username.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.password.id_for_label }}" class="form-label fw-semibold">{{ form.password.label }}</label>
+                    {{ form.password }}
+                    {% if form.password.help_text %}<div class="form-text">{{ form.password.help_text }}</div>{% endif %}
+                    {% for error in form.password.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.confirm_password.id_for_label }}" class="form-label fw-semibold">{{ form.confirm_password.label }}</label>
+                    {{ form.confirm_password }}
+                    {% for error in form.confirm_password.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.phone.id_for_label }}" class="form-label fw-semibold">{{ form.phone.label }}</label>
+                    {{ form.phone }}
+                    {% for error in form.phone.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.employee_id.id_for_label }}" class="form-label fw-semibold">{{ form.employee_id.label }}</label>
+                    {{ form.employee_id }}
+                    {% if form.employee_id.help_text %}<div class="form-text">{{ form.employee_id.help_text }}</div>{% endif %}
+                    {% for error in form.employee_id.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.department.id_for_label }}" class="form-label fw-semibold">{{ form.department.label }}</label>
+                    {{ form.department }}
+                    {% if form.department.help_text %}<div class="form-text">{{ form.department.help_text }}</div>{% endif %}
+                    {% for error in form.department.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.role.id_for_label }}" class="form-label fw-semibold">{{ form.role.label }}</label>
+                    {{ form.role }}
+                    {% for error in form.role.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check-lg"></i> {% if register_mode %}Create Account & Log In{% else %}Create User Account{% endif %}
+                    </button>
+                    {% if register_mode %}
+                        <a href="{% url 'accounts:login' %}" class="btn btn-secondary">Back to Login</a>
+                    {% else %}
+                        <a href="{% url 'accounts:staff_list' %}" class="btn btn-secondary">Cancel</a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setRole(role) {
+    var roleSelect = document.getElementById('id_role');
+    if (!roleSelect) return;
+    Array.prototype.forEach.call(roleSelect.options, function (option) {
+        option.selected = (option.value === role);
+    });
+    roleSelect.classList.add('is-valid');
+    document.getElementById('newUserForm').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+{% endblock %}

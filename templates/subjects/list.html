@@ -1,0 +1,139 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Subjects - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">Subjects</h1>
+        <p class="page-subtitle">
+            {% if request.user.profile.is_super_admin %}
+                All department subjects
+            {% elif request.user.profile.is_hod %}
+                {{ request.user.profile.department.code }} department subjects
+            {% else %}
+                Subjects assigned to you
+            {% endif %}
+        </p>
+    </div>
+    {% if request.user.profile.is_super_admin or request.user.profile.is_hod %}
+    <div>
+        <a href="{% url 'subjects:add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Add Subject
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Search & Filter -->
+<div class="card border-light shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" action="{% url 'subjects:list' %}" class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label fw-semibold text-secondary">Search</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search by subject code or name..." value="{{ current_filters.q }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold text-secondary">Department</label>
+                <select name="department" class="form-select">
+                    <option value="">All Departments</option>
+                    {% for d in departments %}
+                        <option value="{{ d.id }}" {% if current_filters.department == d.id|stringformat:"i" %}selected{% endif %}>{{ d.code }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-funnel"></i> Apply Filters
+                </button>
+                <a href="{% url 'subjects:list' %}" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-light shadow-sm">
+    <div class="card-body p-0">
+        {% if subjects %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr class="text-secondary bg-light">
+                            <th class="ps-4">Code</th>
+                            <th>Subject Name</th>
+                            <th>Department</th>
+                            <th class="text-center">Semester</th>
+                            <th class="text-center">Credits</th>
+                            <th>Academic Year</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subject in subjects %}
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="badge badge-primary">{{ subject.code }}</span>
+                                </td>
+                                <td>
+                                    <span class="fw-semibold text-dark">{{ subject.name }}</span>
+                                    {% if subject.regulation %}
+                                        <div class="text-muted small">{{ subject.regulation.code }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>{{ subject.department.code }}</td>
+                                <td class="text-center">Sem {{ subject.semester }}</td>
+                                <td class="text-center">{{ subject.credits }}</td>
+                                <td>{{ subject.academic_year.name }}</td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'resources:list' %}?subject={{ subject.id }}" class="btn btn-sm btn-light py-1 me-1">
+                                        Resources
+                                    </a>
+                                    {% if request.user.profile.is_super_admin or request.user.profile.is_hod %}
+                                        <a href="{% url 'subjects:edit' subject.id %}" class="btn btn-sm btn-light py-1 me-1">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+                                        <a href="{% url 'subjects:delete' subject.id %}" class="btn btn-sm btn-outline-danger py-1">
+                                            Deactivate
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if is_paginated %}
+                <div class="card-footer bg-white border-0 py-3">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in current_filters.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a></li>
+                            {% endif %}
+                            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                            {% if page_obj.has_next %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in current_filters.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5 text-secondary">
+                <i class="bi bi-book fs-1 mb-3 d-block text-light"></i>
+                <h5 class="fw-semibold">No Subjects Found</h5>
+                <p class="small text-muted mb-0">
+                    {% if request.user.profile.is_super_admin or request.user.profile.is_hod %}
+                        Create your first subject to get started.
+                    {% else %}
+                        You have not been assigned any subjects yet.
+                    {% endif %}
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

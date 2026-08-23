@@ -1,0 +1,53 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit Department{% else %}Add Department{% endif %} - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">{% if form.instance.pk %}Edit Department{% else %}Add Department{% endif %}</h1>
+        <p class="page-subtitle">Configure department details</p>
+    </div>
+</div>
+
+<div class="card border-light shadow-sm" style="max-width: 720px;">
+    <div class="card-body">
+        <form method="POST" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="{{ form.code.id_for_label }}" class="form-label fw-semibold">{{ form.code.label }}</label>
+                {{ form.code }}
+                {% if form.code.help_text %}<div class="form-text">{{ form.code.help_text }}</div>{% endif %}
+                {% for error in form.code.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold">{{ form.name.label }}</label>
+                {{ form.name }}
+                {% if form.name.help_text %}<div class="form-text">{{ form.name.help_text }}</div>{% endif %}
+                {% for error in form.name.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% for error in form.description.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-4">
+                <label for="{{ form.status.id_for_label }}" class="form-label fw-semibold">{{ form.status.label }}</label>
+                {{ form.status }}
+                {% for error in form.status.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-check-lg"></i> Save Department
+                </button>
+                <a href="{% url 'departments:list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

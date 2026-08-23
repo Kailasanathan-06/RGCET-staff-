@@ -1,0 +1,66 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Edit Resource - {{ resource.title }}{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">Edit Resource</h1>
+        <p class="page-subtitle">Update metadata for: {{ resource.title }}</p>
+    </div>
+    <div>
+        <a href="{% url 'resources:detail' resource.id %}" class="btn btn-secondary">
+            Cancel
+        </a>
+    </div>
+</div>
+
+<div class="form-card shadow-sm">
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+                <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+                <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                {{ form.category }}
+                {% if form.category.errors %}
+                    <div class="text-danger small mt-1">{{ form.category.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <label for="{{ form.status.id_for_label }}" class="form-label">{{ form.status.label }}</label>
+                {{ form.status }}
+                {% if form.status.errors %}
+                    <div class="text-danger small mt-1">{{ form.status.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <a href="{% url 'resources:detail' resource.id %}" class="btn btn-secondary">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

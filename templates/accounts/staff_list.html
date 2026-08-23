@@ -1,0 +1,137 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Staff Management - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">Staff Management</h1>
+        <p class="page-subtitle">Create and manage staff accounts</p>
+    </div>
+    <div>
+        <a href="{% url 'accounts:staff_add' %}" class="btn btn-primary">
+            <i class="bi bi-person-plus-fill"></i> New User
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card border-light shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" action="{% url 'accounts:staff_list' %}" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold text-secondary">Search</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search by name, employee ID, username or email..." value="{{ current_filters.q }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold text-secondary">Role</label>
+                <select name="role" class="form-select">
+                    <option value="">All Roles</option>
+                    <option value="SUPER_ADMIN" {% if current_filters.role == 'SUPER_ADMIN' %}selected{% endif %}>Super Admin</option>
+                    <option value="HOD" {% if current_filters.role == 'HOD' %}selected{% endif %}>HOD</option>
+                    <option value="TEACHER" {% if current_filters.role == 'TEACHER' %}selected{% endif %}>Teacher</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold text-secondary">Department</label>
+                <select name="department" class="form-select">
+                    <option value="">All</option>
+                    {% for d in departments %}
+                        <option value="{{ d.id }}" {% if current_filters.department == d.id|stringformat:"i" %}selected{% endif %}>{{ d.code }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold text-secondary">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All</option>
+                    <option value="active" {% if current_filters.status == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if current_filters.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel"></i></button>
+                <a href="{% url 'accounts:staff_list' %}" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-light shadow-sm">
+    <div class="card-body p-0">
+        {% if staff_list %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr class="text-secondary bg-light">
+                            <th class="ps-4">Staff</th>
+                            <th>Employee ID</th>
+                            <th>Department</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Last Login</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for staff in staff_list %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="fs-4 text-primary me-3">
+                                            <i class="bi bi-person-circle"></i>
+                                        </div>
+                                        <div>
+                                            <a href="{% url 'accounts:staff_detail' staff.id %}" class="fw-semibold text-dark d-block">{{ staff.user.get_full_name|default:staff.user.username }}</a>
+                                            <span class="text-muted small">{{ staff.user.email|default:staff.user.username }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">{{ staff.employee_id }}</span></td>
+                                <td>{{ staff.department.code|default:"—" }}</td>
+                                <td>{{ staff.get_role_display }}</td>
+                                <td>
+                                    {% if staff.status == 'active' %}
+                                        <span class="badge badge-active">Active</span>
+                                    {% else %}
+                                        <span class="badge badge-inactive">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ staff.user.last_login|date:"d M Y H:i"|default:"Never" }}</td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'accounts:staff_detail' staff.id %}" class="btn btn-sm btn-light py-1 me-1">View</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if is_paginated %}
+                <div class="card-footer bg-white border-0 py-3">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in current_filters.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a></li>
+                            {% endif %}
+                            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                            {% if page_obj.has_next %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in current_filters.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5 text-secondary">
+                <i class="bi bi-people fs-1 mb-3 d-block text-light"></i>
+                <h5 class="fw-semibold">No Staff Found</h5>
+                <p class="small text-muted mb-0">Create staff accounts to assign roles and departments.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

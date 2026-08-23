@@ -1,0 +1,44 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Import Students Excel - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">Import Student Excel</h1>
+        <p class="page-subtitle">Batch upload student records using a spreadsheet (.xlsx, .xls, or .csv)</p>
+    </div>
+</div>
+
+<div class="form-card shadow-sm">
+    <form id="uploadForm" method="POST" enctype="multipart/form-data" action="{% url 'excel_manager:import' %}">
+        {% csrf_token %}
+
+        <div class="mb-4">
+            <label class="form-label fw-bold">Select Spreadsheet File</label>
+            <div class="drag-drop-zone" id="dropZone">
+                <i class="bi bi-file-earmark-excel fs-1 mb-2 d-block text-secondary"></i>
+                <span id="fileLabel">Drag and drop Excel or CSV file here, or click to browse</span>
+                <input type="file" name="file" id="id_file" class="d-none" accept=".xlsx, .xls, .csv">
+            </div>
+            <div class="form-text mt-1 text-muted">
+                Make sure your spreadsheet includes columns for Register Number, Student Name, Batch, Year, Semester, Section, and Academic Year.
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <a href="{% url 'students:list' %}" class="btn btn-secondary">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                Upload & Preview
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/upload.js' %}"></script>
+{% endblock %}

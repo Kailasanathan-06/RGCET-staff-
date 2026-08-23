@@ -1,0 +1,119 @@
+{% extends 'base/base.html' %}
+{% load dict_extras %}
+
+{% block title %}Teacher Dashboard - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">Welcome, {{ request.user.get_full_name|default:request.user.username }}</h1>
+        <p class="page-subtitle">Department of {{ request.user.profile.department.name }}</p>
+    </div>
+    <div>
+        <a href="{% url 'subjects:add_course' %}" class="btn btn-outline-primary me-2">
+            <i class="bi bi-journal-plus"></i> Add Course
+        </a>
+        <a href="{% url 'resources:upload' %}" class="btn btn-primary">
+            <i class="bi bi-cloud-arrow-up-fill"></i> Upload New Resource
+        </a>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="dashboard-grid">
+    <div class="stat-card">
+        <div class="stat-info">
+            <div class="stat-value">{{ assignments.count }}</div>
+            <div class="stat-label">Assigned Subjects</div>
+        </div>
+        <div class="stat-icon primary">
+            <i class="bi bi-book"></i>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-info">
+            <div class="stat-value">{{ total_resources }}</div>
+            <div class="stat-label">Total Uploaded Resources</div>
+        </div>
+        <div class="stat-icon success">
+            <i class="bi bi-folder-check"></i>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left column: My Assigned Subjects -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-light shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-semibold text-secondary"><i class="bi bi-bookmark-star me-2"></i>My Subjects</h5>
+            </div>
+            <div class="card-body pt-0">
+                {% if assignments %}
+                    <div class="list-group list-group-flush">
+                        {% for assignment in assignments %}
+                            <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="fw-semibold text-primary mb-1">{{ assignment.subject.code }} — {{ assignment.subject.name }}</div>
+                                    <span class="badge bg-secondary-subtle text-secondary-emphasis">Semester {{ assignment.subject.semester }}</span>
+                                    <span class="badge bg-light text-dark ms-1">Regulation: {{ assignment.subject.regulation.code }}</span>
+                                    <span class="badge bg-success-subtle text-success-emphasis ms-1">
+                                        <i class="bi bi-file-earmark-text me-1"></i>{{ subject_resource_counts|get_item:assignment.subject_id }} resources
+                                    </span>
+                                </div>
+                                <a href="{% url 'resources:list' %}?subject={{ assignment.subject.id }}" class="btn btn-sm btn-outline-primary py-1">
+                                    View Resources
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-secondary">
+                        <i class="bi bi-exclamation-circle fs-2 mb-2 d-block"></i>
+                        No subjects currently assigned to you.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right column: Recent Uploads -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-light shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 fw-semibold text-secondary"><i class="bi bi-clock-history me-2"></i>Recent Uploads</h5>
+            </div>
+            <div class="card-body pt-0">
+                {% if recent_resources %}
+                    <div class="list-group list-group-flush">
+                        {% for resource in recent_resources %}
+                            <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-semibold text-dark mb-1">{{ resource.title }}</div>
+                                    <div class="text-muted small">
+                                        {{ resource.subject.code }} · {{ resource.category.name }} · {{ resource.created_at|date:"d M Y, h:i A" }}
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'resources:detail' resource.id %}" class="btn btn-sm btn-light py-1">
+                                        Details
+                                    </a>
+                                    <a href="{% url 'resources:download' resource.id %}" class="btn btn-sm btn-primary py-1 px-2">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-secondary">
+                        <i class="bi bi-folder-x fs-2 mb-2 d-block"></i>
+                        You haven't uploaded any resources yet.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

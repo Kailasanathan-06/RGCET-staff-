@@ -1,0 +1,101 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Audit Logs - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">System Audit Logs</h1>
+        <p class="page-subtitle">Security trail and system activity logs</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card border-light shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold text-secondary">Filter by Action</label>
+                <select name="action" class="form-select">
+                    <option value="">All Actions</option>
+                    {% for val, label in actions %}
+                        <option value="{{ val }}" {% if current_filters.action == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-4 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+                <a href="{% url 'audit:list' %}" class="btn btn-secondary">
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Logs Table -->
+<div class="card border-light shadow-sm">
+    <div class="card-body p-0">
+        {% if logs %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="font-size: 0.875rem;">
+                    <thead>
+                        <tr class="text-secondary bg-light">
+                            <th class="ps-4">Timestamp</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Object Type</th>
+                            <th>Description</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                            <tr>
+                                <td class="ps-4 text-muted">{{ log.timestamp|date:"d M Y, h:i A" }}</td>
+                                <td class="fw-semibold text-dark">{{ log.user.username }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if 'LOGIN' in log.action or 'UPLOAD' in log.action %}bg-success-subtle text-success-emphasis
+                                        {% elif 'DELETE' in log.action or 'FAILED' in log.action %}bg-danger-subtle text-danger-emphasis
+                                        {% else %}bg-secondary-subtle text-secondary-emphasis{% endif %}">
+                                        {{ log.get_action_display }}
+                                    </span>
+                                </td>
+                                <td>{{ log.object_type|default:"—" }}</td>
+                                <td class="text-dark">{{ log.description|default:"—" }}</td>
+                                <td class="text-muted">{{ log.ip_address|default:"—" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if is_paginated %}
+                <div class="card-footer bg-white border-0 py-3">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_filters.action %}&action={{ current_filters.action }}{% endif %}">Previous</a></li>
+                            {% endif %}
+                            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                            {% if page_obj.has_next %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_filters.action %}&action={{ current_filters.action }}{% endif %}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5 text-secondary">
+                <i class="bi bi-shield-check fs-1 mb-3 d-block text-light"></i>
+                <h5 class="fw-semibold">No Audit Logs Found</h5>
+                <p class="small text-muted mb-0">Security log trail is empty.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

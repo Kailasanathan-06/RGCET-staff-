@@ -1,0 +1,233 @@
+/* Core variables */
+:root {
+    --primary-color: #1e3a8a; /* Deep Navy Blue */
+    --primary-hover: #1e40af;
+    --primary-light: #eff6ff;
+    
+    --secondary-color: #475569; /* Slate Gray */
+    --secondary-hover: #334155;
+    --secondary-light: #f1f5f9;
+    
+    --success-color: #10b981; /* Emerald Green */
+    --warning-color: #f59e0b; /* Amber Yellow */
+    --danger-color: #ef4444;  /* Red */
+    
+    --bg-dark: #0f172a;
+    --bg-light: #f8fafc;
+    --bg-card: #ffffff;
+    
+    --border-color: #e2e8f0;
+    
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-light: #94a3b8;
+    
+    --font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --sidebar-width: 260px;
+    --header-height: 70px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-light);
+    color: var(--text-primary);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+/* Layout Grid */
+.app-container {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) 1fr;
+    grid-template-rows: var(--header-height) 1fr;
+    grid-template-areas: 
+        "sidebar header"
+        "sidebar main";
+    min-height: 100vh;
+}
+
+/* Sidebar Styling */
+.app-sidebar {
+    grid-area: sidebar;
+    background-color: var(--bg-dark);
+    color: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+}
+
+.sidebar-brand {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 1.5rem 0;
+    list-style: none;
+    overflow-y: auto;
+}
+
+.sidebar-nav li {
+    margin-bottom: 0.25rem;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    color: #cbd5e1;
+    font-weight: 500;
+    transition: all 0.2s;
+    border-left: 4px solid transparent;
+}
+
+.sidebar-nav a:hover, .sidebar-nav li.active a {
+    background-color: rgba(255,255,255,0.05);
+    color: #ffffff;
+    text-decoration: none;
+    border-left-color: var(--primary-color);
+}
+
+.sidebar-nav .icon {
+    margin-right: 0.75rem;
+    font-size: 1.2rem;
+}
+
+.sidebar-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.875rem;
+    color: #94a3b8;
+}
+
+/* Header Styling */
+.app-header {
+    grid-area: header;
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    z-index: 90;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-right: 1rem;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.user-profile-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+}
+
+.user-profile-menu:hover {
+    background-color: var(--secondary-light);
+}
+
+.avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: var(--primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* Main Content Area */
+.app-main {
+    grid-area: main;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.page-title-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.page-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+    .app-container {
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+            "header"
+            "main";
+    }
+    
+    .app-sidebar {
+        position: fixed;
+        left: -260px;
+        top: 0;
+        bottom: 0;
+        width: var(--sidebar-width);
+        transition: left 0.3s ease;
+    }
+    
+    .app-sidebar.show {
+        left: 0;
+    }
+    
+    .menu-toggle {
+        display: block;
+    }
+}

@@ -1,0 +1,145 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Academic Resources - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">Academic Resources</h1>
+        <p class="page-subtitle">Search, filter, and download academic materials</p>
+    </div>
+    {% if not request.user.profile.is_super_admin and not request.user.profile.is_hod %}
+    <div>
+        <a href="{% url 'resources:upload' %}" class="btn btn-primary">
+            <i class="bi bi-cloud-arrow-up-fill"></i> Upload Resource
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Search & Filter Card -->
+<div class="card border-light shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" action="{% url 'resources:list' %}" class="row g-3">
+            <!-- Search Query -->
+            <div class="col-md-4">
+                <label class="form-label fw-semibold text-secondary">Search</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search by title, code or keyword..." value="{{ current_filters.q }}">
+                </div>
+            </div>
+            
+            <!-- Category Filter -->
+            <div class="col-md-2">
+                <label class="form-label fw-semibold text-secondary">Resource Type</label>
+                <select name="category" class="form-select">
+                    <option value="">All Types</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if current_filters.category == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Semester Filter -->
+            <div class="col-md-2">
+                <label class="form-label fw-semibold text-secondary">Semester</label>
+                <select name="semester" class="form-select">
+                    <option value="">All Semesters</option>
+                    {% for i in "12345678" %}
+                        <option value="{{ i }}" {% if current_filters.semester == i %}selected{% endif %}>Semester {{ i }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Buttons -->
+            <div class="col-md-4 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-funnel"></i> Apply Filters
+                </button>
+                <a href="{% url 'resources:list' %}" class="btn btn-secondary">
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Resources Table/Cards -->
+<div class="card border-light shadow-sm">
+    <div class="card-body p-0">
+        {% if resources %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr class="text-secondary bg-light">
+                            <th class="ps-4">Resource Info</th>
+                            <th>Subject</th>
+                            <th>Category</th>
+                            <th>Uploaded By</th>
+                            <th>File Size</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for resource in resources %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="fs-3 text-primary me-3">
+                                            <i class="bi bi-file-earmark-text-fill"></i>
+                                        </div>
+                                        <div>
+                                            <a href="{% url 'resources:detail' resource.id %}" class="fw-semibold text-dark mb-1 d-block">{{ resource.title }}</a>
+                                            <span class="text-muted small">Uploaded: {{ resource.created_at|date:"d M Y" }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="fw-medium text-secondary">{{ resource.subject.code }}</span>
+                                    <div class="text-muted small">{{ resource.subject.name }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ resource.category.name }}</span>
+                                </td>
+                                <td>{{ resource.uploaded_by.user.get_full_name|default:resource.uploaded_by.user.username }}</td>
+                                <td>{{ resource.file_size_display }}</td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'resources:detail' resource.id %}" class="btn btn-sm btn-light py-1 me-1">
+                                        Details
+                                    </a>
+                                    <a href="{% url 'resources:download' resource.id %}" class="btn btn-sm btn-primary py-1 px-3">
+                                        <i class="bi bi-download"></i> Download
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if is_paginated %}
+                <div class="card-footer bg-white border-0 py-3">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in current_filters.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a></li>
+                            {% endif %}
+                            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                            {% if page_obj.has_next %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in current_filters.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5 text-secondary">
+                <i class="bi bi-file-earmark-x fs-1 mb-3 d-block text-light"></i>
+                <h5 class="fw-semibold">No Resources Found</h5>
+                <p class="small text-muted mb-0">Try adjusting your filters or upload a new resource.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

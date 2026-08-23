@@ -1,0 +1,152 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Student Records - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">Student Records</h1>
+        <p class="page-subtitle">Manage student data and placement directory</p>
+    </div>
+    <div class="d-flex gap-2">
+        {% if request.user.profile.is_hod or request.user.profile.is_super_admin %}
+            <a href="{% url 'students:export' %}{% if export_querystring %}?{{ export_querystring }}{% endif %}"
+               class="btn btn-success">
+                <i class="bi bi-file-earmark-excel"></i> Export Excel
+            </a>
+            <a href="{% url 'excel_manager:import' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-repeat"></i> Import Excel
+            </a>
+            <a href="{% url 'students:add' %}" class="btn btn-primary">
+                <i class="bi bi-person-plus-fill"></i> Add Student
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card border-light shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold text-secondary">Search</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search by name, register number or email..." value="{{ current_filters.q }}">
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label fw-semibold text-secondary">Batch</label>
+                <select name="batch" class="form-select">
+                    <option value="">All Batches</option>
+                    {% for batch in batches %}
+                        <option value="{{ batch }}" {% if current_filters.batch == batch %}selected{% endif %}>{{ batch }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label fw-semibold text-secondary">Year of Study</label>
+                <select name="year" class="form-select">
+                    <option value="">All Years</option>
+                    <option value="1" {% if current_filters.year == "1" %}selected{% endif %}>1st Year</option>
+                    <option value="2" {% if current_filters.year == "2" %}selected{% endif %}>2nd Year</option>
+                    <option value="3" {% if current_filters.year == "3" %}selected{% endif %}>3rd Year</option>
+                    <option value="4" {% if current_filters.year == "4" %}selected{% endif %}>4th Year</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+                <a href="{% url 'students:list' %}" class="btn btn-secondary">
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Student Records Table -->
+<div class="card border-light shadow-sm">
+    <div class="card-body p-0">
+        {% if students %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr class="text-secondary bg-light">
+                            <th class="ps-4">Register Number</th>
+                            <th>Student Name</th>
+                            <th>Year / Batch</th>
+                            <th>Section</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                            <tr>
+                                <td class="ps-4 fw-semibold text-primary">{{ student.register_number }}</td>
+                                <td class="fw-semibold text-dark">{{ student.name }}</td>
+                                <td>
+                                    <div>{{ student.get_year_display }}</div>
+                                    <span class="text-muted small">Batch: {{ student.batch }}</span>
+                                </td>
+                                <td><span class="badge bg-light text-secondary border">Sec {{ student.section|default:"-" }}</span></td>
+                                <td>{{ student.email|default:"—" }}</td>
+                                <td>
+                                    {% if student.status == 'active' %}
+                                        <span class="badge badge-active">Active</span>
+                                    {% elif student.status == 'inactive' %}
+                                        <span class="badge badge-inactive">Inactive</span>
+                                    {% else %}
+                                        <span class="badge badge-warning">Graduated</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'students:detail' student.id %}" class="btn btn-sm btn-light py-1 me-1">
+                                        View
+                                    </a>
+                                    {% if request.user.profile.is_hod or request.user.profile.is_super_admin %}
+                                        <a href="{% url 'students:edit' student.id %}" class="btn btn-sm btn-outline-primary py-1 me-1">
+                                            Edit
+                                        </a>
+                                        <a href="{% url 'students:delete' student.id %}" class="btn btn-sm btn-outline-danger py-1">
+                                            Delete
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if is_paginated %}
+                <div class="card-footer bg-white border-0 py-3">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in current_filters.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a></li>
+                            {% endif %}
+                            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                            {% if page_obj.has_next %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in current_filters.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5 text-secondary">
+                <i class="bi bi-people fs-1 mb-3 d-block text-light"></i>
+                <h5 class="fw-semibold">No Students Found</h5>
+                <p class="small text-muted mb-0">Add student records or upload them from an Excel sheet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

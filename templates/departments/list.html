@@ -1,0 +1,100 @@
+{% extends 'base/base.html' %}
+{% load dict_extras %}
+
+{% block title %}Departments Management - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">Departments Management</h1>
+        <p class="page-subtitle">Add and configure college department structures</p>
+    </div>
+    <div>
+        <a href="{% url 'departments:add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Add Department
+        </a>
+    </div>
+</div>
+
+<div class="card border-light shadow-sm">
+    <div class="card-body p-0">
+        {% if departments %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr class="text-secondary bg-light">
+                            <th class="ps-4">Code</th>
+                            <th>Department Name</th>
+                            <th class="text-center">Staff</th>
+                            <th class="text-center">Subjects</th>
+                            <th class="text-center">Students</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dept in departments %}
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="badge badge-primary">{{ dept.code }}</span>
+                                </td>
+                                <td>
+                                    <span class="fw-semibold text-dark">{{ dept.name }}</span>
+                                    {% if dept.description %}
+                                        <div class="text-muted small">{{ dept.description|truncatechars:60 }}</div>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">{{ staff_counts|get_item:dept.id }}</td>
+                                <td class="text-center">{{ subject_counts|get_item:dept.id }}</td>
+                                <td class="text-center">{{ student_counts|get_item:dept.id }}</td>
+                                <td>
+                                    {% if dept.is_active %}
+                                        <span class="badge badge-active">Active</span>
+                                    {% else %}
+                                        <span class="badge badge-inactive">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'departments:edit' dept.id %}" class="btn btn-sm btn-light py-1 me-1">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </a>
+                                    {% if dept.is_active %}
+                                        <a href="{% url 'departments:delete' dept.id %}" class="btn btn-sm btn-outline-danger py-1">
+                                            Deactivate
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if is_paginated %}
+                <div class="card-footer bg-white border-0 py-3">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                            {% endif %}
+                            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                            {% if page_obj.has_next %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5 text-secondary">
+                <i class="bi bi-building fs-1 mb-3 d-block text-light"></i>
+                <h5 class="fw-semibold">No Departments Yet</h5>
+                <p class="small text-muted mb-3">Add your first department to start organizing academic data.</p>
+                <a href="{% url 'departments:add' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Add Department
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

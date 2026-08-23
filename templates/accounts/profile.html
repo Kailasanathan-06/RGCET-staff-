@@ -1,0 +1,75 @@
+{% extends 'base/base.html' %}
+
+{% block title %}My Profile - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">My Profile</h1>
+        <p class="page-subtitle">Personal information and login credentials</p>
+    </div>
+    <div>
+        <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Edit Profile
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    {% if profile.profile_photo %}
+                        <img src="{{ profile.profile_photo.url }}" class="avatar me-3" style="width: 70px; height: 70px;">
+                    {% else %}
+                        <div class="avatar me-3" style="width: 70px; height: 70px; font-size: 1.75rem;">
+                            {{ request.user.first_name|slice:":1"|upper }}
+                        </div>
+                    {% endif %}
+                    <div>
+                        <h3 class="fw-bold mb-1">{{ request.user.get_full_name|default:request.user.username }}</h3>
+                        <span class="badge bg-primary-subtle text-primary-emphasis">Employee ID: {{ profile.employee_id }}</span>
+                        {% if profile.department %}
+                            <span class="badge bg-secondary-subtle text-secondary-emphasis ms-1">{{ profile.department.code }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded">
+                            <div class="text-muted small">Username</div>
+                            <div class="fw-semibold text-dark">{{ request.user.username }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded">
+                            <div class="text-muted small">Email Address</div>
+                            <div class="fw-semibold text-dark">{{ request.user.email|default:"Not Provided" }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded">
+                            <div class="text-muted small">Phone Number</div>
+                            <div class="fw-semibold text-dark">{{ profile.phone|default:"Not Provided" }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded">
+                            <div class="text-muted small">System Role</div>
+                            <div class="fw-semibold text-dark">{{ profile.get_role_display }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-top pt-3 d-flex gap-2">
+                    <a href="{% url 'accounts:change_password' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-key"></i> Change Password
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

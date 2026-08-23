@@ -1,0 +1,250 @@
+{% extends 'base/base.html' %}
+
+{% block title %}HOD Dashboard - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">HOD Dashboard</h1>
+        <p class="page-subtitle">Department of {{ request.user.profile.department.name }} ({{ request.user.profile.department.code }})</p>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="dashboard-grid">
+    <div class="stat-card">
+        <div class="stat-info">
+            <div class="stat-value">{{ total_teachers }}</div>
+            <div class="stat-label">Total Teachers</div>
+        </div>
+        <div class="stat-icon primary">
+            <i class="bi bi-people"></i>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-info">
+            <div class="stat-value">{{ total_subjects }}</div>
+            <div class="stat-label">Subjects</div>
+        </div>
+        <div class="stat-icon warning">
+            <i class="bi bi-book"></i>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-info">
+            <div class="stat-value">{{ total_students }}</div>
+            <div class="stat-label">Students</div>
+        </div>
+        <div class="stat-icon danger">
+            <i class="bi bi-person-workspace"></i>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-info">
+            <div class="stat-value">{{ total_resources }}</div>
+            <div class="stat-label">Resources</div>
+        </div>
+        <div class="stat-icon success">
+            <i class="bi bi-folder-check"></i>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card border-light shadow-sm">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-semibold text-secondary"><i class="bi bi-clock-history me-2"></i>Recent Department Uploads</h5>
+                <a href="{% url 'resources:list' %}" class="btn btn-sm btn-outline-secondary">View All Resources</a>
+            </div>
+            <div class="card-body pt-0">
+                {% if recent_resources %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr class="text-secondary">
+                                    <th>Resource Title</th>
+                                    <th>Subject</th>
+                                    <th>Category</th>
+                                    <th>Uploaded By</th>
+                                    <th>Date</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for resource in recent_resources %}
+                                    <tr>
+                                        <td>
+                                            <span class="fw-semibold text-dark">{{ resource.title }}</span>
+                                        </td>
+                                        <td>{{ resource.subject.code }} — {{ resource.subject.name }}</td>
+                                        <td><span class="badge bg-light text-dark border">{{ resource.category.name }}</span></td>
+                                        <td>{{ resource.uploaded_by.user.get_full_name|default:resource.uploaded_by.user.username }}</td>
+                                        <td class="text-muted small">{{ resource.created_at|date:"d M Y, h:i A" }}</td>
+                                        <td class="text-end">
+                                            <a href="{% url 'resources:detail' resource.id %}" class="btn btn-sm btn-light py-1 me-1">Details</a>
+                                            <a href="{% url 'resources:download' resource.id %}" class="btn btn-sm btn-primary py-1"><i class="bi bi-download"></i></a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-secondary">
+                        <i class="bi bi-folder-x fs-2 mb-2 d-block"></i>
+                        No resources uploaded in your department yet.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Full department visibility -->
+<div class="row">
+    <!-- Staff -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-light shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-semibold text-secondary"><i class="bi bi-people-fill me-2"></i>Department Staff</h5>
+                <a href="{% url 'subjects:list' %}" class="btn btn-sm btn-outline-secondary">Subjects</a>
+            </div>
+            <div class="card-body pt-0">
+                {% if dept_teachers %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr class="text-secondary small">
+                                    <th>Staff Member</th>
+                                    <th>Role</th>
+                                    <th>Phone</th>
+                                    <th class="text-end">Subjects</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for teacher in dept_teachers %}
+                                    <tr>
+                                        <td class="fw-semibold text-dark">{{ teacher.user.get_full_name|default:teacher.user.username }}</td>
+                                        <td><span class="badge {% if teacher.is_hod %}bg-primary-subtle text-primary-emphasis{% else %}bg-secondary-subtle text-secondary-emphasis{% endif %}">{{ teacher.get_role_display }}</span></td>
+                                        <td class="text-muted">{{ teacher.phone|default:"—" }}</td>
+                                        <td class="text-end">
+                                            <span class="badge bg-light text-dark border">{{ teacher.subject_count }} subject{{ teacher.subject_count|pluralize }}</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-secondary">No staff in this department.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Subjects with assigned teachers -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-light shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 fw-semibold text-secondary"><i class="bi bi-book me-2"></i>Subjects & Teachers</h5>
+            </div>
+            <div class="card-body pt-0">
+                {% if dept_subjects %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr class="text-secondary small">
+                                    <th>Code</th>
+                                    <th>Subject</th>
+                                    <th>Sem</th>
+                                    <th class="text-end">Teachers</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for subject in dept_subjects %}
+                                    <tr>
+                                        <td class="fw-semibold text-primary">{{ subject.code }}</td>
+                                        <td>{{ subject.name }}</td>
+                                        <td class="text-muted">{{ subject.semester }}</td>
+                                        <td class="text-end">
+                                            <span class="badge bg-light text-dark border">{{ subject.teacher_count }} teacher{{ subject.teacher_count|pluralize }}</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-secondary">No subjects created yet.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Students by year -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-light shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-semibold text-secondary"><i class="bi bi-person-workspace me-2"></i>Students by Year</h5>
+                <a href="{% url 'students:list' %}" class="btn btn-sm btn-outline-secondary">All Students</a>
+            </div>
+            <div class="card-body pt-0">
+                {% if student_year_summary %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr class="text-secondary small">
+                                    <th>Year</th>
+                                    <th class="text-end">Students</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in student_year_summary %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ item.year }}<span class="text-secondary small"> {% if item.year == 1 %}st{% elif item.year == 2 %}nd{% elif item.year == 3 %}rd{% else %}th{% endif %} Year</span></td>
+                                        <td class="text-end"><span class="badge bg-light text-dark border">{{ item.count }}</span></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-secondary">No students registered yet.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent students -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-light shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 fw-semibold text-secondary"><i class="bi bi-clock-history me-2"></i>Recently Added Students</h5>
+            </div>
+            <div class="card-body pt-0">
+                {% if recent_students %}
+                    <div class="list-group list-group-flush">
+                        {% for student in recent_students %}
+                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="fw-semibold text-dark">{{ student.name }}</span>
+                                    <div class="text-muted small">{{ student.register_number }} · {{ student.batch }} · Sem {{ student.semester }}</div>
+                                </div>
+                                <a href="{% url 'students:detail' student.id %}" class="btn btn-sm btn-light py-1">Details</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-secondary">No students added yet.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

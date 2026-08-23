@@ -1,0 +1,111 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Add Course - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title"><i class="bi bi-journal-plus me-2"></i>Add Course</h1>
+        <p class="page-subtitle">Create a new subject and upload its syllabus, question papers and notes in one step</p>
+    </div>
+    <div>
+        <a href="{% url 'subjects:list' %}" class="btn btn-secondary">
+            <i class="bi bi-x-circle me-1"></i> Cancel
+        </a>
+    </div>
+</div>
+
+<div class="form-card shadow-sm">
+    <form method="POST" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+        {% endif %}
+
+        <h6 class="fw-semibold text-secondary mb-3"><i class="bi bi-book me-1"></i>Course Details</h6>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.code.id_for_label }}" class="form-label fw-semibold">{{ form.code.label }}</label>
+                {{ form.code }}
+                {% for error in form.code.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold">{{ form.name.label }}</label>
+                {{ form.name }}
+                {% for error in form.name.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.department.id_for_label }}" class="form-label fw-semibold">{{ form.department.label }}</label>
+                {{ form.department }}
+                {% if form.department.help_text %}<div class="form-text">{{ form.department.help_text }}</div>{% endif %}
+                {% for error in form.department.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.academic_year.id_for_label }}" class="form-label fw-semibold">{{ form.academic_year.label }}</label>
+                {{ form.academic_year }}
+                {% for error in form.academic_year.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.semester.id_for_label }}" class="form-label fw-semibold">{{ form.semester.label }}</label>
+                {{ form.semester }}
+                {% for error in form.semester.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.credits.id_for_label }}" class="form-label fw-semibold">{{ form.credits.label }}</label>
+                {{ form.credits }}
+                {% for error in form.credits.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.regulation.id_for_label }}" class="form-label fw-semibold">{{ form.regulation.label }}</label>
+                {{ form.regulation }}
+                {% for error in form.regulation.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        <h6 class="fw-semibold text-secondary mb-1"><i class="bi bi-file-earmark-plus me-1"></i>Course Materials (optional)</h6>
+        <p class="text-muted small mb-3">You can select more than one file per section. Each file is saved as an academic resource under the subject.</p>
+
+        <div class="mb-4">
+            <label for="{{ form.syllabus_files.id_for_label }}" class="form-label fw-semibold">{{ form.syllabus_files.label }}</label>
+            {{ form.syllabus_files }}
+            <div class="form-text">{{ form.syllabus_files.help_text }}</div>
+            {% for error in form.syllabus_files.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="mb-4">
+            <label for="{{ form.question_paper_files.id_for_label }}" class="form-label fw-semibold">{{ form.question_paper_files.label }}</label>
+            {{ form.question_paper_files }}
+            <div class="form-text">{{ form.question_paper_files.help_text }}</div>
+            {% for error in form.question_paper_files.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="mb-4">
+            <label for="{{ form.notes_files.id_for_label }}" class="form-label fw-semibold">{{ form.notes_files.label }}</label>
+            {{ form.notes_files }}
+            <div class="form-text">{{ form.notes_files.help_text }}</div>
+            {% for error in form.notes_files.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <a href="{% url 'subjects:list' %}" class="btn btn-secondary">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-journal-plus me-1"></i> Add Course
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

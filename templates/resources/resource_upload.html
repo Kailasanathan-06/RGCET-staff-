@@ -1,0 +1,114 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Upload Resource - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">Upload Academic Resource</h1>
+        <p class="page-subtitle">Add notes, question papers, lab manuals, or assignments</p>
+    </div>
+    <div>
+        <a href="{% url 'resources:list' %}" class="btn btn-secondary">
+            Cancel
+        </a>
+    </div>
+</div>
+
+<div class="form-card shadow-sm">
+    <form id="uploadForm" method="POST" enctype="multipart/form-data" action="{% url 'resources:upload' %}">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                {{ form.category }}
+                <div class="form-text">{{ form.category.help_text }}</div>
+                {% if form.category.errors %}
+                    <div class="text-danger small mt-1">{{ form.category.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.subject.id_for_label }}" class="form-label">{{ form.subject.label }}</label>
+                {{ form.subject }}
+                <div class="form-text">{{ form.subject.help_text }}</div>
+                {% if form.subject.errors %}
+                    <div class="text-danger small mt-1">{{ form.subject.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.academic_year.id_for_label }}" class="form-label">{{ form.academic_year.label }}</label>
+                {{ form.academic_year }}
+                {% if form.academic_year.errors %}
+                    <div class="text-danger small mt-1">{{ form.academic_year.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.semester.id_for_label }}" class="form-label">{{ form.semester.label }}</label>
+                {{ form.semester }}
+                {% if form.semester.errors %}
+                    <div class="text-danger small mt-1">{{ form.semester.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.unit.id_for_label }}" class="form-label">{{ form.unit.label }}</label>
+                {{ form.unit }}
+                <div class="form-text">{{ form.unit.help_text }}</div>
+                {% if form.unit.errors %}
+                    <div class="text-danger small mt-1">{{ form.unit.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+            {{ form.title }}
+            <div class="form-text">{{ form.title.help_text }}</div>
+            {% if form.title.errors %}
+                <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="mb-4">
+            <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+                <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Drag and Drop Upload Area -->
+        <div class="mb-4">
+            <label class="form-label fw-bold">Select File</label>
+            <div class="drag-drop-zone" id="dropZone">
+                <i class="bi bi-cloud-arrow-up fs-1 mb-2 d-block text-secondary"></i>
+                <span id="fileLabel">Drag and drop file here, or click to browse</span>
+                {{ form.file }}
+            </div>
+            <div class="form-text mt-1 text-muted">{{ form.file.help_text }}</div>
+            {% if form.file.errors %}
+                <div class="text-danger small mt-1">{{ form.file.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <a href="{% url 'resources:list' %}" class="btn btn-secondary">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-cloud-arrow-up-fill"></i> Upload Resource
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/upload.js' %}"></script>
+{% endblock %}

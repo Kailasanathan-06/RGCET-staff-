@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Academic Resource Management{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts (Geist/Inter-like) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom styling -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="app-sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <i class="bi bi-mortarboard-fill me-2"></i> RGCET Portal
+            </div>
+            
+            <ul class="sidebar-nav">
+                <li class="{% if request.resolver_match.view_name == 'dashboard:home' %}active{% endif %}">
+                    <a href="{% url 'dashboard:home' %}">
+                        <i class="bi bi-speedometer2 icon"></i> Dashboard
+                    </a>
+                </li>
+
+                <li class="{% if request.resolver_match.view_name == 'subjects:add_course' %}active{% endif %}">
+                    <a href="{% url 'subjects:add_course' %}">
+                        <i class="bi bi-journal-plus icon"></i> Add Course
+                    </a>
+                </li>
+                
+                {% if request.user.profile.is_super_admin %}
+                    <!-- Super Admin Links -->
+                    <li class="{% if 'departments' in request.path %}active{% endif %}">
+                        <a href="{% url 'departments:list' %}">
+                            <i class="bi bi-building icon"></i> Departments
+                        </a>
+                    </li>
+                    <li class="{% if 'staff' in request.path %}active{% endif %}">
+                        <a href="{% url 'accounts:staff_list' %}">
+                            <i class="bi bi-people-fill icon"></i> Staff
+                        </a>
+                    </li>
+                    <li class="{% if request.resolver_match.view_name == 'accounts:staff_add' %}active{% endif %}">
+                        <a href="{% url 'accounts:staff_add' %}">
+                            <i class="bi bi-person-plus-fill icon"></i> New User
+                        </a>
+                    </li>
+                    <li class="{% if 'subjects' in request.path %}active{% endif %}">
+                        <a href="{% url 'subjects:list' %}">
+                            <i class="bi bi-book icon"></i> Subjects
+                        </a>
+                    </li>
+                    <li class="{% if 'students' in request.path %}active{% endif %}">
+                        <a href="{% url 'students:list' %}">
+                            <i class="bi bi-people icon"></i> Students
+                        </a>
+                    </li>
+                    <li class="{% if 'resources' in request.path %}active{% endif %}">
+                        <a href="{% url 'resources:list' %}">
+                            <i class="bi bi-folder2-open icon"></i> All Resources
+                        </a>
+                    </li>
+                    <li class="{% if 'audit' in request.path %}active{% endif %}">
+                        <a href="{% url 'audit:list' %}">
+                            <i class="bi bi-shield-check icon"></i> Audit Logs
+                        </a>
+                    </li>
+                    <li class="{% if 'reports' in request.path %}active{% endif %}">
+                        <a href="{% url 'dashboard:reports' %}">
+                            <i class="bi bi-graph-up icon"></i> Reports
+                        </a>
+                    </li>
+                {% elif request.user.profile.is_hod %}
+                    <!-- HOD Links -->
+                    <li class="{% if 'subjects' in request.path %}active{% endif %}">
+                        <a href="{% url 'subjects:list' %}">
+                            <i class="bi bi-book icon"></i> Subjects
+                        </a>
+                    </li>
+                    <li class="{% if 'students' in request.path %}active{% endif %}">
+                        <a href="{% url 'students:list' %}">
+                            <i class="bi bi-people icon"></i> Student Records
+                        </a>
+                    </li>
+                    <li class="{% if 'excel' in request.path %}active{% endif %}">
+                        <a href="{% url 'excel_manager:import' %}">
+                            <i class="bi bi-file-earmark-excel icon"></i> Excel Import
+                        </a>
+                    </li>
+                    <li class="{% if 'resources' in request.path %}active{% endif %}">
+                        <a href="{% url 'resources:list' %}">
+                            <i class="bi bi-folder2-open icon"></i> Resources
+                        </a>
+                    </li>
+                    <li class="{% if 'audit' in request.path %}active{% endif %}">
+                        <a href="{% url 'audit:list' %}">
+                            <i class="bi bi-shield-check icon"></i> Activity Log
+                        </a>
+                    </li>
+                    <li class="{% if 'reports' in request.path %}active{% endif %}">
+                        <a href="{% url 'dashboard:reports' %}">
+                            <i class="bi bi-graph-up icon"></i> Reports
+                        </a>
+                    </li>
+                {% else %}
+                    <!-- Teacher Links -->
+                    <li class="{% if 'resources' in request.path and 'upload' not in request.path %}active{% endif %}">
+                        <a href="{% url 'resources:list' %}">
+                            <i class="bi bi-file-earmark-text icon"></i> My Resources
+                        </a>
+                    </li>
+                    <li class="{% if 'resources/upload' in request.path %}active{% endif %}">
+                        <a href="{% url 'resources:upload' %}">
+                            <i class="bi bi-cloud-arrow-up icon"></i> Upload Resource
+                        </a>
+                    </li>
+                    <li class="{% if 'students' in request.path %}active{% endif %}">
+                        <a href="{% url 'students:list' %}">
+                            <i class="bi bi-people icon"></i> Student List
+                        </a>
+                    </li>
+                    <li class="{% if 'excel' in request.path %}active{% endif %}">
+                        <a href="{% url 'excel_manager:import' %}">
+                            <i class="bi bi-file-earmark-excel icon"></i> Excel Upload
+                        </a>
+                    </li>
+                {% endif %}
+                
+                <li class="{% if 'profile' in request.path %}active{% endif %}">
+                    <a href="{% url 'accounts:profile' %}">
+                        <i class="bi bi-person-circle icon"></i> Profile Settings
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                Logged in as:<br>
+                <strong>{{ request.user.username }}</strong>
+            </div>
+        </aside>
+
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+                <span class="fs-5 fw-semibold text-secondary">
+                    {% if request.user.profile.department %}
+                        {{ request.user.profile.department.code }} Dept
+                    {% else %}
+                        College Administration
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="header-right">
+                <span class="badge badge-primary">{{ request.user.profile.get_role_display }}</span>
+                <a href="{% url 'accounts:logout' %}" class="btn btn-outline-secondary btn-sm py-1 px-3">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            {% if messages %}
+                <div class="container-fluid px-0">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {% if 'success' in message.tags %}<i class="bi bi-check-circle-fill"></i>{% endif %}
+                            {% if 'danger' in message.tags %}<i class="bi bi-exclamation-triangle-fill"></i>{% endif %}
+                            {% if 'warning' in message.tags %}<i class="bi bi-exclamation-circle-fill"></i>{% endif %}
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom Sidebar JS -->
+    <script src="{% static 'js/sidebar.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

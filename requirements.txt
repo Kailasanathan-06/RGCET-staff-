@@ -1,0 +1,19 @@
+Django==5.2.16
+djangorestframework==3.16.1
+djangorestframework-simplejwt==5.5.1
+mysqlclient==2.2.7
+openpyxl==3.1.5
+pandas==2.3.0
+python-dotenv==1.1.1
+Pillow==11.1.0
+django-filter==26.1
+reportlab==5.0.0
+
+# Vercel deployment
+dj-database-url==2.3.0
+whitenoise==6.9.0
+gunicorn==23.0.0
+
+# Google Cloud Storage (for media files)
+django-storages==1.14.4
+google-cloud-storage==2.19.0

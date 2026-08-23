@@ -1,0 +1,78 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Import Summary - RGCET Portal{% endblock %}
+
+{% block content %}
+<div class="page-title-bar">
+    <div>
+        <h1 class="page-title">Import Summary</h1>
+        <p class="page-subtitle">Results for: {{ excel_import.original_filename }}</p>
+    </div>
+    <div>
+        <a href="{% url 'students:list' %}" class="btn btn-primary">
+            View Student Records
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Stat counts -->
+    <div class="col-md-3 mb-4">
+        <div class="card border-light shadow-sm text-center p-3">
+            <div class="fs-1 text-primary mb-1"><i class="bi bi-file-earmark-spreadsheet"></i></div>
+            <div class="fw-bold fs-3 text-dark">{{ excel_import.total_rows }}</div>
+            <span class="text-secondary small">Total Rows</span>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card border-light shadow-sm text-center p-3">
+            <div class="fs-1 text-success mb-1"><i class="bi bi-check-circle"></i></div>
+            <div class="fw-bold fs-3 text-success">{{ excel_import.imported_rows }}</div>
+            <span class="text-secondary small">Imported Successfully</span>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card border-light shadow-sm text-center p-3">
+            <div class="fs-1 text-warning mb-1"><i class="bi bi-exclamation-triangle"></i></div>
+            <div class="fw-bold fs-3 text-warning">{{ excel_import.duplicate_rows }}</div>
+            <span class="text-secondary small">Duplicates Found</span>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card border-light shadow-sm text-center p-3">
+            <div class="fs-1 text-danger mb-1"><i class="bi bi-x-circle"></i></div>
+            <div class="fw-bold fs-3 text-danger">{{ excel_import.invalid_rows }}</div>
+            <span class="text-secondary small">Invalid Records</span>
+        </div>
+    </div>
+</div>
+
+<!-- Errors list if any -->
+{% if errors %}
+    <div class="card border-light shadow-sm mb-4">
+        <div class="card-header bg-white border-0 py-3">
+            <h5 class="mb-0 fw-semibold text-danger"><i class="bi bi-exclamation-octagon me-2"></i>Row-by-Row Import Log Errors</h5>
+        </div>
+        <div class="card-body pt-0">
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr class="text-secondary">
+                            <th>Row Number</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for err in errors %}
+                            <tr>
+                                <td><span class="badge bg-danger-subtle text-danger-emphasis">Row {{ err.row }}</span></td>
+                                <td>{{ err.error }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
