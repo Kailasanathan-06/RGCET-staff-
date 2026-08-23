@@ -1,0 +1,12 @@
+.git
+.env
+.env.local
+media
+__pycache__
+**/__pycache__
+*.pyc
+db.sqlite3
+PROJECT_INFORMATION.pdf
+RUNNING_COMMANDS.pdf
+USER_CREDENTIALS.pdf
+.vercel
