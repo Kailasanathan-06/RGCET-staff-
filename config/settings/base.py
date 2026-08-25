@@ -166,10 +166,10 @@ REST_FRAMEWORK = {
 # ─── JWT Configuration ────────────────────────────────────────────────────────
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(
-        minutes=int(os.getenv('JWT_ACCESS_TOKEN_LIFETIME_MINUTES', 60))
+        minutes=int(os.getenv('JWT_ACCESS_TOKEN_LIFETIME_MINUTES') or 60)
     ),
     'REFRESH_TOKEN_LIFETIME': timedelta(
-        days=int(os.getenv('JWT_REFRESH_TOKEN_LIFETIME_DAYS', 7))
+        days=int(os.getenv('JWT_REFRESH_TOKEN_LIFETIME_DAYS') or 7)
     ),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -178,7 +178,7 @@ SIMPLE_JWT = {
 
 
 # ─── File Upload Limits ───────────────────────────────────────────────────────
-MAX_UPLOAD_SIZE = int(os.getenv('MAX_UPLOAD_SIZE_MB', 50)) * 1024 * 1024
+MAX_UPLOAD_SIZE = int(os.getenv('MAX_UPLOAD_SIZE_MB') or 50) * 1024 * 1024
 
 ALLOWED_UPLOAD_EXTENSIONS = [
     '.pdf', '.doc', '.docx', '.ppt', '.pptx',
@@ -208,7 +208,7 @@ EMAIL_BACKEND = os.getenv(
     'django.core.mail.backends.console.EmailBackend'
 )
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_PORT = int(os.getenv('EMAIL_PORT') or 587)
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
