@@ -3,6 +3,7 @@ Vercel production settings.
 Uses PostgreSQL (Neon free tier) + Google Cloud Storage (15GB free).
 Falls back to SQLite and local filesystem when env vars are missing.
 """
+from . import base  # noqa
 from .base import *  # noqa
 import os
 import dj_database_url
@@ -27,6 +28,13 @@ if _db_url:
             conn_health_checks=True,
             ssl_require=_db_url.startswith('postgres'),
         )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
 
 # ─── Static Files ────────────────────────────────────────────────────────────
