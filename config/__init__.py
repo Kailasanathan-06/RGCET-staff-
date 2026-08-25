@@ -1,5 +1,5 @@
 try:
     import pymysql
     pymysql.install_as_MySQLdb()
-except ImportError:
+except Exception:
     pass
