@@ -19,38 +19,58 @@ ALLOWED_HOSTS = [
 ]
 
 # ─── Database ─────────────────────────────────────────────────────────────────
-# Free tier: 512MB storage, 24/7 compute
 _db_url = os.getenv('DATABASE_URL', '')
-DATABASES = {
-    'default': dj_database_url.config(
-        default=_db_url,
-        conn_max_age=600,
-        conn_health_checks=True,
-        ssl_require=_db_url.startswith('postgres'),
-    )
-}
+if _db_url:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=_db_url,
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=_db_url.startswith('postgres'),
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
-# ─── Static Files (Google Cloud Storage) ─────────────────────────────────────
-STATIC_URL = f'https://storage.googleapis.com/{os.getenv("GS_BUCKET_NAME")}/static/'
-STATICFILES_STORAGE = 'config.storages.GoogleCloudStaticStorage'
+# ─── Static Files (Whitenoise for Vercel) ────────────────────────────────────
+# Use whitenoise on Vercel so static files work without GCS
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# ─── Media Files (Google Cloud Storage) ──────────────────────────────────────
-# Free tier: 15GB storage (same as Gmail account!)
-DEFAULT_FILE_STORAGE = 'config.storages.GoogleCloudMediaStorage'
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'audit.middleware.AuditMiddleware',
+]
+
+# ─── Media Files (Google Cloud Storage if configured, local fallback) ────────
 GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME')
-GS_PROJECT_ID = os.getenv('GS_PROJECT_ID')
-GS_DEFAULT_ACL = 'publicRead'
-GS_QUERYSTRING_AUTH = False
-GS_FILE_OVERWRITE = False
-
-# Google Cloud credentials (from service account JSON)
-GS_TYPE = 'service_account'
-GS_PRIVATE_KEY_ID = os.getenv('GS_PRIVATE_KEY_ID')
-GS_PRIVATE_KEY = (os.getenv('GS_PRIVATE_KEY') or '').replace('\\n', '\n')
-GS_CLIENT_EMAIL = os.getenv('GS_CLIENT_EMAIL')
-GS_CLIENT_ID = os.getenv('GS_CLIENT_ID')
-GS_AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'
-GS_TOKEN_URI = 'https://oauth2.googleapis.com/token'
+if GS_BUCKET_NAME:
+    DEFAULT_FILE_STORAGE = 'config.storages.GoogleCloudMediaStorage'
+    GS_PROJECT_ID = os.getenv('GS_PROJECT_ID')
+    GS_DEFAULT_ACL = 'publicRead'
+    GS_QUERYSTRING_AUTH = False
+    GS_FILE_OVERWRITE = False
+    GS_TYPE = 'service_account'
+    GS_PRIVATE_KEY_ID = os.getenv('GS_PRIVATE_KEY_ID')
+    GS_PRIVATE_KEY = (os.getenv('GS_PRIVATE_KEY') or '').replace('\\n', '\n')
+    GS_CLIENT_EMAIL = os.getenv('GS_CLIENT_EMAIL')
+    GS_CLIENT_ID = os.getenv('GS_CLIENT_ID')
+    GS_AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'
+    GS_TOKEN_URI = 'https://oauth2.googleapis.com/token'
+else:
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # ─── CSRF & Security ─────────────────────────────────────────────────────────
 CSRF_TRUSTED_ORIGINS = [
