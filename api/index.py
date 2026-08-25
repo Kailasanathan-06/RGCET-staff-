@@ -1,6 +1,7 @@
 """
 Vercel serverless entry point for Django.
-Uses Mangum to bridge Vercel's HTTP events to Django's WSGI application.
+Vercel's @vercel/python runtime natively handles WSGI apps.
+Just export the WSGI app as `app`.
 """
 import os
 import sys
@@ -12,7 +13,3 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.vercel')
 from django.core.wsgi import get_wsgi_application
 
 app = get_wsgi_application()
-
-from mangum import Mangum
-
-handler = Mangum(app, lifespan="off")
