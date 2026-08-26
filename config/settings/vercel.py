@@ -3,14 +3,15 @@ Vercel production settings.
 Uses PostgreSQL (Neon free tier) + Google Cloud Storage (15GB free).
 Falls back to SQLite and local filesystem when env vars are missing.
 """
-from . import base  # noqa
 from .base import *  # noqa
 import os
+from django.core.management.utils import get_random_secret_key
 import dj_database_url
 
 # ─── Debug & Security ────────────────────────────────────────────────────────
 DEBUG = False
-SECRET_KEY = os.getenv('SECRET_KEY') or base.SECRET_KEY
+_base_secret = SECRET_KEY
+SECRET_KEY = os.getenv('SECRET_KEY') or _base_secret or get_random_secret_key()
 
 ALLOWED_HOSTS = [
     host.strip()
