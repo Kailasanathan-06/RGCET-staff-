@@ -1,10 +1,31 @@
 """Root URL configuration."""
+import os
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+
+def health_check(request):
+    """Health check endpoint — verifies database connectivity."""
+    status = {'django': 'ok', 'database': 'unknown'}
+    try:
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT 1')
+        status['database'] = 'ok'
+    except Exception as e:
+        status['database'] = f'error: {type(e).__name__}'
+    status['secret_key'] = 'set' if settings.SECRET_KEY != 'unsafe-default-key' else 'missing!'
+    status['db_backend'] = settings.DATABASES['default']['ENGINE']
+    return JsonResponse(status)
+
+
 urlpatterns = [
+    # Health check
+    path('health/', health_check),
+
     # Django Admin
     path('admin/', admin.site.urls),
 
@@ -21,7 +42,7 @@ urlpatterns = [
     # REST API
     path('api/v1/', include('core_api.urls', namespace='api')),
 
-    # Root redirect → dashboard
+    # Root redirect -> dashboard
     path('', include('dashboard.urls', namespace='dashboard_root')),
 ]
 
@@ -29,4 +50,4 @@ urlpatterns = [
 handler400 = 'accounts.views.error_400'
 handler403 = 'accounts.views.error_403'
 handler404 = 'accounts.views.error_404'
-handler500 = 'accounts.views.error_500'
+handler500 = 'config.views.error_500'
