@@ -10,7 +10,7 @@ env/
 
 # Django
 db.sqlite3
-staticfiles/
+# staticfiles/  -- committed for Vercel deployment
 
 # User uploads (served from Google Cloud Storage in production)
 media/
