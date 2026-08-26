@@ -1,7 +1,8 @@
 """
-Generate the two project PDFs:
+Generate the three project PDFs:
     - PROJECT_INFORMATION.pdf  (project overview, tech stack, architecture, security)
     - USER_CREDENTIALS.pdf     (seeded usernames, roles, departments and passwords)
+    - RUNNING_COMMANDS.pdf     (all commands to set up, run and deploy)
 
 Usage:
     python manage.py generate_pdfs [--out-dir <dir>]
@@ -27,7 +28,7 @@ LIGHT = colors.HexColor('#F5F7FB')
 
 
 class Command(BaseCommand):
-    help = 'Generate PROJECT_INFORMATION.pdf and USER_CREDENTIALS.pdf.'
+    help = 'Generate PROJECT_INFORMATION.pdf, USER_CREDENTIALS.pdf and RUNNING_COMMANDS.pdf.'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -41,18 +42,17 @@ class Command(BaseCommand):
 
         project_pdf = os.path.join(out_dir, 'PROJECT_INFORMATION.pdf')
         users_pdf = os.path.join(out_dir, 'USER_CREDENTIALS.pdf')
+        commands_pdf = os.path.join(out_dir, 'RUNNING_COMMANDS.pdf')
 
         self._build_project_pdf(project_pdf)
         self._build_users_pdf(users_pdf)
-
-        commands_pdf = os.path.join(out_dir, 'RUNNING_COMMANDS.pdf')
         self._build_commands_pdf(commands_pdf)
 
         self.stdout.write(self.style.SUCCESS(f'\nCreated: {project_pdf}'))
         self.stdout.write(self.style.SUCCESS(f'Created: {users_pdf}'))
         self.stdout.write(self.style.SUCCESS(f'Created: {commands_pdf}'))
 
-    # ── Shared helpers ──────────────────────────────────────────────────────
+    # -- Shared helpers -------------------------------------------------------
     @staticmethod
     def _styles():
         base = getSampleStyleSheet()
@@ -107,7 +107,7 @@ class Command(BaseCommand):
         ]))
         return t
 
-    # ── Project information PDF ─────────────────────────────────────────────
+    # -- Project information PDF ----------------------------------------------
     def _build_project_pdf(self, path):
         doc = SimpleDocTemplate(
             path, pagesize=A4,
@@ -120,7 +120,7 @@ class Command(BaseCommand):
 
         header, hstyle = self._header_table(
             'College Academic Resource Management System',
-            f'Project Information & Technical Documentation — generated {timezone.localdate():%d %B %Y}',
+            f'Project Information & Technical Documentation -- generated {timezone.localdate():%d %B %Y}',
         )
         header.setStyle(hstyle)
         story.append(header)
@@ -133,20 +133,24 @@ class Command(BaseCommand):
             'users belonging to one department can never view, download or modify records belonging '
             'to another department. The system provides resource upload and secure download, student '
             'record management, batch Excel import/export, department-level reports, an audit trail, '
-            'and a JWT-protected REST API.', styles['body']))
+            'and a JWT-protected REST API. Deployed on Vercel as a serverless Django application '
+            'with Neon PostgreSQL for production and Google Cloud Storage for file hosting.',
+            styles['body']))
 
         story.append(Paragraph('2. Key Features', styles['h1']))
         story.append(self._table(
             ['Feature', 'Details'],
             [
                 ['New User page', 'Creates teacher accounts with name, phone, email, department, password + confirm password'],
-                ['Login-page registration', 'Teacher/HOD accounts can be created from the login page — auto-login after signup (Super Admin never allowed)'],
+                ['Login-page registration', 'Teacher/HOD accounts can be created from the login page -- auto-login after signup (Super Admin never allowed)'],
                 ['Multi-subject teachers', 'One teacher can be assigned to many subjects at creation and in dashboards'],
                 ['Teacher dashboard', 'Lists every assigned subject with live per-subject resource counts'],
                 ['HOD full department view', 'HOD sees all staff, subjects, students-by-year and resources of their department'],
                 ['Department isolation', 'Cross-department access is blocked (403 web / 404 API)'],
                 ['Excel import/export', 'Batch student import with column mapping and filtered exports'],
                 ['Reports & audit trail', 'Department/college-wide reports and full activity logging'],
+                ['Vercel deployment', 'Serverless deployment with automatic scaling, Python 3.12 runtime'],
+                ['REST API', 'JWT-protected API with department-scoped ViewSets for all modules'],
             ],
             widths=[55 * mm, 125 * mm],
         ))
@@ -155,16 +159,20 @@ class Command(BaseCommand):
         story.append(self._table(
             ['Layer', 'Technology', 'Purpose'],
             [
-                ['Backend', 'Python 3.13 / Django 5.2', 'Core framework, ORM, admin, auth'],
+                ['Backend', 'Python 3.12 / Django 5.2', 'Core framework, ORM, admin, auth'],
                 ['REST API', 'Django REST Framework 3.16', 'API endpoints for each module'],
                 ['Auth / JWT', 'SimpleJWT', 'Access + refresh tokens for the API'],
-                ['Database', 'MySQL 8.x', 'Production data store'],
+                ['Database (local)', 'MySQL 8.x (PyMySQL)', 'Local development data store'],
+                ['Database (prod)', 'Neon PostgreSQL (free tier)', 'Production data store via dj-database-url'],
                 ['Test DB', 'SQLite (in-memory)', 'Isolated test runs'],
                 ['Templates', 'Django templates + Bootstrap 5', 'Responsive UI, sidebar layout'],
                 ['Excel', 'pandas / openpyxl', 'Batch student import and export'],
                 ['PDF', 'reportlab', 'Documentation PDF generation'],
                 ['Files', 'Pillow', 'Image handling for profiles'],
-                ['Env', 'python-dotenv', 'Configuration via .env'],
+                ['Static files', 'Whitenoise + GCS', 'Compressed static serving on Vercel'],
+                ['File storage', 'Google Cloud Storage (15 GB free)', 'Media file uploads in production'],
+                ['Hosting', 'Vercel (serverless)', 'Auto-scaling, SSL, CDN'],
+                ['Env', 'python-dotenv', 'Local configuration via .env'],
             ],
             widths=[30 * mm, 55 * mm, 95 * mm],
         ))
@@ -173,7 +181,8 @@ class Command(BaseCommand):
         story.append(self._table(
             ['App', 'Responsibility'],
             [
-                ['config', 'Settings split into base / development / production / testing'],
+                ['config', 'Settings split into base / development / testing / vercel (production)'],
+                ['api', 'Vercel serverless entry point (WSGI adapter for @vercel/python)'],
                 ['accounts', 'Users, StaffProfile, roles, login, New User page, staff management, auth mixins'],
                 ['departments', 'Department CRUD (Super Admin only)'],
                 ['subjects', 'Subjects, academic years, regulations, teacher assignments (multi-subject)'],
@@ -187,18 +196,35 @@ class Command(BaseCommand):
             widths=[30 * mm, 150 * mm],
         ))
 
-        story.append(Paragraph('5. Roles & Access Control', styles['h1']))
+        story.append(Paragraph('5. Deployment Architecture', styles['h1']))
+        story.append(self._table(
+            ['Component', 'Details'],
+            [
+                ['Platform', 'Vercel serverless functions (auto-scaling, global CDN)'],
+                ['Runtime', '@vercel/python, Python 3.12 (runtime.txt)'],
+                ['Entry point', 'api/index.py -- exports WSGI app for Vercel auto-detection'],
+                ['Build config', 'vercel.json -- builds api/index.py, routes all requests to it'],
+                ['Database', 'Neon PostgreSQL (free tier, 512 MB) with SSL + connection pooling'],
+                ['Static files', 'Whitenoise compressed manifest or Google Cloud Storage'],
+                ['Media files', 'Google Cloud Storage (free tier, 15 GB) with public read'],
+                ['Settings', 'config.settings.vercel with env-var fallbacks for all options'],
+                ['Security', 'HSTS, SSL redirect, CSRF protection, secure cookies'],
+            ],
+            widths=[35 * mm, 145 * mm],
+        ))
+
+        story.append(Paragraph('6. Roles & Access Control', styles['h1']))
         story.append(self._table(
             ['Role', 'Scope'],
             [
                 ['Super Admin', 'Full access across all departments; manages departments, staff and New User creation'],
-                ['HOD', 'Own department only — sees all staff, subjects, students and resources of the department'],
+                ['HOD', 'Own department only -- sees all staff, subjects, students and resources of the department'],
                 ['Teacher', 'Own department; can be assigned multiple subjects and sees them on the dashboard'],
             ],
             widths=[35 * mm, 145 * mm],
         ))
 
-        story.append(Paragraph('6. Security Model', styles['h1']))
+        story.append(Paragraph('7. Security Model', styles['h1']))
         story.append(Paragraph(
             'Isolation is enforced at every layer, not just hidden in the UI:', styles['body']))
         story.append(self._table(
@@ -208,14 +234,16 @@ class Command(BaseCommand):
                 ['TeacherSubjectAccessMixin', 'Teachers blocked from subjects they are not assigned to'],
                 ['Role mixins', 'RoleRequired / HODOrAbove / SuperAdminRequired gate views'],
                 ['API scoping', 'REST ViewSets filter by department; cross-dept returns 404'],
-                ['Secure downloads', 'Files never served via /media/ — always through an authorized view'],
+                ['Secure downloads', 'Files never served via /media/ -- always through an authorized view'],
                 ['Audit trail', 'Uploads, downloads, imports and logins recorded with IP + user'],
                 ['Deactivation', 'Deactivated accounts cannot log in or access any page'],
+                ['JWT auth', '60-minute access tokens, 7-day refresh with rotation + blacklist'],
+                ['Env secrets', 'SECRET_KEY, DATABASE_URL and GCS credentials via Vercel env vars'],
             ],
             widths=[50 * mm, 130 * mm],
         ))
 
-        story.append(Paragraph('7. Key URLs', styles['h1']))
+        story.append(Paragraph('8. Key URLs', styles['h1']))
         story.append(self._table(
             ['URL', 'Purpose'],
             [
@@ -234,12 +262,17 @@ class Command(BaseCommand):
             widths=[40 * mm, 140 * mm],
         ))
 
-        story.append(Paragraph('8. Running the Project', styles['h1']))
+        story.append(Paragraph('9. Running the Project', styles['h1']))
         story.append(Paragraph(
-            '<b>Setup:</b> create MySQL database <i>college_management</i>, copy <i>.env.example</i> to '
+            '<b>Local setup:</b> create MySQL database <i>college_management</i>, copy <i>.env.example</i> to '
             '<i>.env</i> and configure credentials, then run '
             '<i>pip install -r requirements.txt</i>, <i>python manage.py migrate</i>, '
             '<i>python manage.py seed_demo_data</i> and <i>python manage.py runserver</i>.',
+            styles['body']))
+        story.append(Paragraph(
+            '<b>Vercel deployment:</b> push to GitHub, link to Vercel, set env vars '
+            '(SECRET_KEY, DATABASE_URL, CSRF_TRUSTED_ORIGINS) in the Vercel dashboard. '
+            'The app auto-deploys on every push to main.',
             styles['body']))
         story.append(Paragraph(
             '<b>Testing:</b> <i>python manage.py test --settings=config.settings.testing</i> '
@@ -250,7 +283,7 @@ class Command(BaseCommand):
 
         doc.build(story)
 
-    # ── Running commands PDF ─────────────────────────────────────────────────
+    # -- Running commands PDF -------------------------------------------------
     def _build_commands_pdf(self, path):
         doc = SimpleDocTemplate(
             path, pagesize=A4,
@@ -263,7 +296,7 @@ class Command(BaseCommand):
 
         header, hstyle = self._header_table(
             'Running Commands Guide',
-            f'All commands needed to set up and run the system — '
+            f'All commands needed to set up, run and deploy the system -- '
             f'generated {timezone.localdate():%d %B %Y}',
         )
         header.setStyle(hstyle)
@@ -280,17 +313,45 @@ class Command(BaseCommand):
             ['Step', 'Command', 'What it does'],
             [
                 ['Virtual env', 'python -m venv venv', 'Create an isolated environment'],
-                ['Activate', 'venv\\Scripts\\activate', 'Switch into the environment'],
+                ['Activate', 'venv\\Scripts\\activate', 'Switch into the environment (Windows)'],
                 ['Install', 'pip install -r requirements.txt', 'Install all dependencies'],
                 ['Env config', 'copy .env.example .env', 'Create your config file'],
                 ['Database', 'python manage.py migrate', 'Create all database tables'],
                 ['Seed data', 'python manage.py seed_demo_data', 'Create departments, users, subjects, students'],
-                ['Start', 'python manage.py runserver', 'Start the dev server'],
+                ['Start', 'python manage.py runserver', 'Start the dev server on http://127.0.0.1:8000'],
             ],
             widths=[25 * mm, 75 * mm, 80 * mm],
         ))
 
-        story.append(Paragraph('3. Common Management Commands', styles['h1']))
+        story.append(Paragraph('3. Vercel Deployment', styles['h1']))
+        story.append(self._table(
+            ['Step', 'Command / Action', 'What it does'],
+            [
+                ['Push to GitHub', 'git push origin main', 'Trigger automatic Vercel deployment'],
+                ['Link project', 'vercel link', 'Connect local CLI to Vercel project'],
+                ['Set env vars', 'Vercel Dashboard > Settings > Env Vars', 'Configure SECRET_KEY, DATABASE_URL, etc.'],
+                ['View logs', 'vercel logs', 'Check serverless function logs'],
+                ['Deploy preview', 'vercel --yes', 'Deploy a preview (non-production) build'],
+            ],
+            widths=[30 * mm, 65 * mm, 85 * mm],
+        ))
+
+        story.append(Paragraph('4. Vercel Environment Variables', styles['h1']))
+        story.append(self._table(
+            ['Variable', 'Required', 'Description'],
+            [
+                ['SECRET_KEY', 'Yes', 'Django secret key for cryptographic signing'],
+                ['DATABASE_URL', 'Yes', 'Neon PostgreSQL connection string (postgresql://...)'],
+                ['CSRF_TRUSTED_ORIGINS', 'Yes', 'Comma-separated list of allowed origins (https://your-app.vercel.app)'],
+                ['ALLOWED_HOSTS', 'Optional', 'Comma-separated hostnames (defaults to all)'],
+                ['GS_BUCKET_NAME', 'Optional', 'Google Cloud Storage bucket for media files'],
+                ['EMAIL_HOST_USER', 'Optional', 'Gmail address for sending emails'],
+                ['EMAIL_HOST_PASSWORD', 'Optional', 'Gmail app password for SMTP'],
+            ],
+            widths=[45 * mm, 20 * mm, 115 * mm],
+        ))
+
+        story.append(Paragraph('5. Common Management Commands', styles['h1']))
         story.append(self._table(
             ['Task', 'Command'],
             [
@@ -307,7 +368,7 @@ class Command(BaseCommand):
             widths=[55 * mm, 125 * mm],
         ))
 
-        story.append(Paragraph('4. Server Options', styles['h1']))
+        story.append(Paragraph('6. Server Options', styles['h1']))
         story.append(self._table(
             ['Command', 'Effect'],
             [
@@ -319,16 +380,35 @@ class Command(BaseCommand):
             widths=[80 * mm, 100 * mm],
         ))
 
-        story.append(Paragraph('5. Logins After Seeding', styles['h1']))
+        story.append(Paragraph('7. Logins After Seeding', styles['h1']))
         story.append(Paragraph(
             'All seeded accounts use the password <b>RGCET@2026</b>. '
             'Log in at http://127.0.0.1:8000/accounts/login/ with <b>admin</b> '
             '(Super Admin) or a HOD/teacher account such as <b>hod_cse</b>. '
             'See USER_CREDENTIALS.pdf for the full list.', styles['body']))
 
+        story.append(Paragraph('8. Project Files', styles['h1']))
+        story.append(self._table(
+            ['File', 'Purpose'],
+            [
+                ['manage.py', 'Django management entry point'],
+                ['api/index.py', 'Vercel serverless function entry point (WSGI app)'],
+                ['vercel.json', 'Vercel deployment configuration (builds, routes, env)'],
+                ['runtime.txt', 'Python version for Vercel (3.12)'],
+                ['requirements.txt', 'Python dependencies'],
+                ['.env', 'Local environment variables (not committed to git)'],
+                ['.env.example', 'Template for .env'],
+                ['.vercelignore', 'Files to exclude from Vercel deployment'],
+                ['run.bat', 'One-click dev server launcher (Windows)'],
+                ['config/settings/base.py', 'Shared Django settings (DB, apps, JWT, middleware)'],
+                ['config/settings/vercel.py', 'Production settings (Neon DB, GCS, security)'],
+            ],
+            widths=[50 * mm, 130 * mm],
+        ))
+
         doc.build(story)
 
-    # ── User credentials PDF ─────────────────────────────────────────────────
+    # -- User credentials PDF -------------------------------------------------
     def _build_users_pdf(self, path):
         doc = SimpleDocTemplate(
             path, pagesize=A4,
@@ -341,7 +421,7 @@ class Command(BaseCommand):
 
         header, hstyle = self._header_table(
             'User Accounts & Credentials',
-            f'Seeded users for the College Academic Resource Management System — '
+            f'Seeded users for the College Academic Resource Management System -- '
             f'generated {timezone.localdate():%d %B %Y}',
         )
         header.setStyle(hstyle)
